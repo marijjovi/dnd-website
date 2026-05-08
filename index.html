@@ -107,79 +107,61 @@
       background: linear-gradient(to right, transparent, var(--gold), transparent);
     }
 
-    /* NAME INPUT */
-    .field-label {
+    /* FSU (CHAOS) BUTTON */
+    .fsu-section { margin-top: 0.5rem; }
+    .fsu-tally {
+      text-align: center;
       font-family: 'Cinzel', serif;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--gold-dark);
-      display: block;
-      margin-bottom: 6px;
+      color: var(--stone-dark);
+      margin-bottom: 0.9rem;
+      min-height: 1.2rem;
     }
-    input[type="text"] {
+    .fsu-btn {
       width: 100%;
-      background: rgba(255,255,255,0.35);
-      border: 1px solid var(--stone-dark);
-      border-bottom: 2px solid var(--gold-dark);
-      border-radius: 2px 2px 0 0;
-      padding: 8px 12px;
-      font-family: 'Crimson Text', serif;
-      font-size: 1rem;
-      color: var(--ink);
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    input[type="text"]:focus {
-      background: rgba(255,255,255,0.55);
-      border-bottom-color: var(--gold);
-    }
-    input[type="text"]::placeholder { color: var(--stone-dark); }
-
-    /* RAISE HAND BUTTON */
-    .hand-section { margin-top: 1.5rem; }
-    .hand-btn {
-      width: 100%;
-      padding: 1.1rem;
+      padding: 1.2rem;
       background: var(--ink);
       color: var(--parchment);
-      border: 2px solid var(--gold-dark);
+      border: 2px solid var(--blood);
       border-radius: 3px;
       font-family: 'Cinzel', serif;
       font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      font-weight: 700;
+      letter-spacing: 0.06em;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.6rem;
       transition: all 0.2s;
-      box-shadow: 0 3px 0 var(--gold-dark), 0 5px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 3px 0 #4a1010, 0 5px 14px rgba(122,28,28,0.25);
       position: relative;
       top: 0;
     }
-    .hand-btn:hover {
+    .fsu-btn:hover {
       background: var(--ink-light);
-      border-color: var(--gold);
-      box-shadow: 0 4px 0 var(--gold-dark), 0 6px 16px rgba(0,0,0,0.35);
+      border-color: var(--blood-light);
+      box-shadow: 0 4px 0 #4a1010, 0 6px 20px rgba(122,28,28,0.4);
       top: -1px;
     }
-    .hand-btn:active {
+    .fsu-btn:active {
       top: 3px;
-      box-shadow: 0 0px 0 var(--gold-dark), 0 2px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 0px 0 #4a1010, 0 2px 6px rgba(0,0,0,0.3);
     }
-    .hand-btn.raised {
+    .fsu-btn.activated {
       background: var(--blood);
       border-color: var(--blood-light);
-      box-shadow: 0 3px 0 #4a1010, 0 5px 12px rgba(122,28,28,0.4);
+      color: #fff;
+      box-shadow: 0 3px 0 #4a1010, 0 5px 24px rgba(176,42,42,0.55);
     }
-    .hand-btn.raised:hover {
+    .fsu-btn.activated:hover {
       background: var(--blood-light);
-      box-shadow: 0 4px 0 #4a1010, 0 6px 20px rgba(122,28,28,0.45);
+      box-shadow: 0 4px 0 #4a1010, 0 8px 28px rgba(176,42,42,0.65);
     }
-    .hand-icon { font-size: 1.3rem; transition: transform 0.3s; }
-    .hand-btn.raised .hand-icon { transform: translateY(-3px) rotate(-10deg); }
+    .fsu-icon { font-size: 1.3rem; transition: transform 0.3s; }
+    .fsu-btn.activated .fsu-icon { transform: scale(1.2); }
 
     .status-text {
       text-align: center;
@@ -303,8 +285,8 @@
     @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
     .fade-in { animation: fadeIn 0.35s ease forwards; }
 
-    @keyframes pulse { 0%,100%{box-shadow:0 3px 0 var(--gold-dark),0 5px 12px rgba(0,0,0,0.3)} 50%{box-shadow:0 3px 0 var(--gold-dark),0 5px 20px rgba(201,151,58,0.5)} }
-    .hand-btn.raised { animation: pulse 2s infinite; }
+    @keyframes chaosGlow { 0%,100%{box-shadow:0 3px 0 #4a1010,0 5px 24px rgba(176,42,42,0.55)} 50%{box-shadow:0 3px 0 #4a1010,0 5px 36px rgba(176,42,42,0.8)} }
+    .fsu-btn.activated { animation: chaosGlow 1.8s infinite; }
   </style>
 </head>
 <body>
@@ -316,19 +298,13 @@
     <p><span class="connection-dot" id="conn-dot"></span><span id="conn-text">Connecting...</span></p>
   </div>
 
-  <div>
-    <label class="field-label" for="player-name">Your Character Name</label>
-    <input type="text" id="player-name" placeholder="e.g. Thorin the Bold" maxlength="40" />
-  </div>
-
-  <div class="divider">✦</div>
-
-  <div class="hand-section">
-    <button class="hand-btn" id="hand-btn" onclick="toggleHand()">
-      <span class="hand-icon">✋</span>
-      <span id="hand-label">Hail the Dungeon Master</span>
+  <div class="fsu-section">
+    <p class="fsu-tally" id="fsu-tally">Be the first to invoke chaos</p>
+    <button class="fsu-btn" id="fsu-btn" onclick="toggleFSU()">
+      <span class="fsu-icon">💥</span>
+      <span id="fsu-label">Fuck Shit Up</span>
     </button>
-    <p class="status-text" id="hand-status"></p>
+    <p class="status-text" id="fsu-status"></p>
   </div>
 
   <div class="divider">✦</div>
@@ -343,12 +319,9 @@
 
 <!-- ═══════════════════════ FIREBASE ═══════════════════════ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { initializeApp } from 'firebase/app';
+  import { getDatabase, ref, set, get, onValue, onDisconnect } from 'firebase/database';
 
-  // ┌─────────────────────────────────────────────────┐
-  // │  PASTE YOUR FIREBASE CONFIG OBJECT HERE         │
-  // └─────────────────────────────────────────────────┘
   const firebaseConfig = {
     apiKey: "PASTE_YOUR_API_KEY",
     authDomain: "PASTE_YOUR_AUTH_DOMAIN",
@@ -364,115 +337,167 @@
 
   const dot = document.getElementById('conn-dot');
   const connText = document.getElementById('conn-text');
-
   function setConnected(ok) {
     dot.className = 'connection-dot ' + (ok ? 'connected' : 'error');
     connText.textContent = ok ? 'Connected to session' : 'Connection error';
   }
 
-  // ── Player name ──────────────────────────────────────
-  const nameInput = document.getElementById('player-name');
-  nameInput.value = localStorage.getItem('dnd_name') || '';
-  nameInput.addEventListener('input', () => localStorage.setItem('dnd_name', nameInput.value.trim()));
+  // ── Presence tracking ─────────────────────────────────
+  // Each browser tab gets its own session ID so the DM sees an accurate live viewer count.
+  // sessionStorage clears when the tab closes, but we also use onDisconnect as a safety net
+  // so Firebase removes the entry even if the page crashes or the connection drops.
+  const sessionId = sessionStorage.getItem('sid') || crypto.randomUUID();
+  sessionStorage.setItem('sid', sessionId);
 
-  function getPlayerName() {
-    return nameInput.value.trim() || 'Unknown Adventurer';
-  }
-
-  // ── Hand raise ───────────────────────────────────────
-  let handRaised = false;
-  const handBtn = document.getElementById('hand-btn');
-  const handLabel = document.getElementById('hand-label');
-  const handStatus = document.getElementById('hand-status');
-
-  window.toggleHand = async function() {
-    const name = getPlayerName();
-    handRaised = !handRaised;
-    const playerKey = name.replace(/[.#$[\]]/g, '_');
-    if (handRaised) {
-      await set(ref(db, `hands/${playerKey}`), { name, ts: Date.now() });
-      handBtn.classList.add('raised');
-      handLabel.textContent = 'Lower Your Hand';
-      handStatus.textContent = 'The DM has been summoned.';
+  const presenceRef = ref(db, `presence/${sessionId}`);
+  onValue(ref(db, '.info/connected'), snap => {
+    if (snap.val() === true) {
+      setConnected(true);
+      // Register the cleanup BEFORE writing so it's guaranteed even on sudden disconnect.
+      onDisconnect(presenceRef).remove();
+      set(presenceRef, true);
     } else {
-      await set(ref(db, `hands/${playerKey}`), null);
-      handBtn.classList.remove('raised');
-      handLabel.textContent = 'Hail the Dungeon Master';
-      handStatus.textContent = 'Hand lowered.';
-      setTimeout(() => { handStatus.textContent = ''; }, 2000);
+      setConnected(false);
+    }
+  });
+
+  // ── FSU (chaos) button ────────────────────────────────
+  // Pressing the button writes fsu/{sessionId}: true so the DM sees the count go up.
+  // Pressing again removes the entry (toggle). When the DM sends a poll, the entire fsu node
+  // is deleted server-side, which is detected below and resets the button automatically.
+  let fsuPressed = false;
+  const fsuBtn = document.getElementById('fsu-btn');
+  const fsuLabel = document.getElementById('fsu-label');
+  const fsuStatus = document.getElementById('fsu-status');
+
+  window.toggleFSU = async function() {
+    fsuPressed = !fsuPressed;
+    if (fsuPressed) {
+      await set(ref(db, `fsu/${sessionId}`), true);
+      fsuBtn.classList.add('activated');
+      fsuLabel.textContent = 'Chaos Invoked';
+      fsuStatus.textContent = 'The DM has been warned.';
+    } else {
+      await set(ref(db, `fsu/${sessionId}`), null);
+      fsuBtn.classList.remove('activated');
+      fsuLabel.textContent = 'Fuck Shit Up';
+      fsuStatus.textContent = '';
     }
   };
 
+  // Watch the live count and detect when the DM resets it (sends a poll — clears the whole fsu node).
+  onValue(ref(db, 'fsu'), snap => {
+    const data = snap.val() || {};
+    const count = Object.keys(data).length;
+    document.getElementById('fsu-tally').textContent =
+      count === 0 ? 'Be the first to invoke chaos'
+                  : `${count} viewer${count !== 1 ? 's' : ''} want${count === 1 ? 's' : ''} chaos`;
+
+    // If our entry was deleted externally (DM sent a poll), reset button state without writing to Firebase.
+    if (fsuPressed && !data[sessionId]) {
+      fsuPressed = false;
+      fsuBtn.classList.remove('activated');
+      fsuLabel.textContent = 'Fuck Shit Up';
+      fsuStatus.textContent = 'A poll has been decreed.';
+      setTimeout(() => { fsuStatus.textContent = ''; }, 3000);
+    }
+  });
+
   // ── Poll listener ─────────────────────────────────────
+  // Watches for a poll to go active. When it does, vote buttons appear.
+  // myVote tracks whether this viewer has already voted this round (resets when poll closes).
   let myVote = null;
   const noPoll = document.getElementById('no-poll');
   const pollContent = document.getElementById('poll-content');
 
-  onValue(ref(db, 'poll'), (snap) => {
-    setConnected(true);
-    const poll = snap.val();
+  // ── Poll listener ─────────────────────────────────────
+  // onValue fires immediately with the current value, then again every time it changes.
+  // So as soon as the DM hits "Decree It", this runs on every audience member's screen
+  // automatically — no refresh needed.
+  // The second argument (() => setConnected(false)) is the error handler: if Firebase
+  // can't be reached at all, it fires this instead of the normal callback.
+  onValue(ref(db, 'poll'), snap => {
+    const poll = snap.val(); // null if no poll has ever been sent
     if (!poll || !poll.active) {
+      // Poll is closed or doesn't exist — show the "awaiting fate" placeholder and hide voting area.
+      // Resetting myVote here means if the DM opens a NEW poll later, this viewer can vote again.
       noPoll.style.display = '';
       pollContent.style.display = 'none';
       pollContent.innerHTML = '';
       myVote = null;
       return;
     }
+    // Poll is active — hide the placeholder and show the voting/results area.
     noPoll.style.display = 'none';
     pollContent.style.display = '';
     renderPoll(poll);
-  }, (err) => { setConnected(false); });
+  }, () => setConnected(false));
 
+  // Decides whether to show vote buttons or the results bars.
+  // If this viewer already voted (myVote is set), jump straight to results so they
+  // can't vote again after a page re-render triggered by someone else voting.
   function renderPoll(poll) {
-    if (myVote) {
-      renderResults(poll);
-      return;
-    }
+    if (myVote) { renderResults(poll); return; }
     let html = `<div class="poll-title fade-in">${poll.question}</div>
     <p class="poll-subtitle">Choose your path wisely.</p>`;
+    // Each option becomes a button. The option text is escaped (apostrophes → \')
+    // so it's safe to pass as a string argument inside the onclick attribute.
     poll.options.forEach(opt => {
       html += `<button class="vote-btn fade-in" onclick="castVote('${opt.replace(/'/g,"\\'")}', this)">${opt}</button>`;
     });
     pollContent.innerHTML = html;
   }
 
-  window.castVote = async function(option, btn) {
+  // Called when an audience member clicks a vote button.
+  // myVote is set first (before the async Firebase write) so that even if the user
+  // clicks twice very fast, the second click hits the `if (myVote) return` guard
+  // before the first write finishes — preventing a double-vote.
+  window.castVote = async function(option) {
     if (myVote) return;
     myVote = option;
-    const snap = await get(ref(db, `votes/${option.replace(/[.#$[\]/]/g,'_')}`));
-    const current = snap.val() || 0;
-    await set(ref(db, `votes/${option.replace(/[.#$[\]/]/g,'_')}`), current + 1);
-    // re-fetch poll and show results
+    const key = option.replace(/[.#$[\]/]/g, '_'); // sanitise to a valid Firebase key
+    // Read the current count, add 1, write it back.
+    // Note: this is NOT atomic — two people clicking at the exact same millisecond could
+    // both read the same count and write the same value. For a casual game this is fine.
+    // If you need exact counts, replace this with a Firebase Transaction.
+    const snap = await get(ref(db, `votes/${key}`));
+    await set(ref(db, `votes/${key}`), (snap.val() || 0) + 1);
+    // Re-fetch the poll so we have the question text available for renderResults.
     const pSnap = await get(ref(db, 'poll'));
     renderResults(pSnap.val());
   };
 
+  // Builds the results bars from the current vote counts.
+  // Uses get() (a one-time read) rather than onValue because we only need the snapshot
+  // at the moment the viewer votes — the live-update listener below handles ongoing refreshes.
   function renderResults(poll) {
     get(ref(db, 'votes')).then(snap => {
       const votes = snap.val() || {};
-      const total = Object.values(votes).reduce((a,b)=>a+b,0);
+      // Sum all vote counts to calculate each option's percentage.
+      const total = Object.values(votes).reduce((a, b) => a + b, 0);
       let html = `<div class="poll-title">${poll.question} <span class="voted-badge">Voted</span></div><br>`;
       poll.options.forEach(opt => {
-        const key = opt.replace(/[.#$[\]/]/g,'_');
+        const key = opt.replace(/[.#$[\]/]/g, '_');
         const count = votes[key] || 0;
-        const pct = total > 0 ? Math.round(count/total*100) : 0;
+        // Avoid dividing by zero if no votes yet; bar stays at 0% width.
+        const pct = total > 0 ? Math.round(count / total * 100) : 0;
         html += `<div class="result-row fade-in">
           <div class="result-label"><span>${opt}</span><span>${pct}%</span></div>
           <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
         </div>`;
       });
-      html += `<p style="font-size:0.8rem; color:var(--ink-light); font-style:italic; margin-top:6px;">${total} vote${total!==1?'s':''} cast</p>`;
+      html += `<p style="font-size:0.8rem;color:var(--ink-light);font-style:italic;margin-top:6px;">${total} vote${total!==1?'s':''} cast</p>`;
       pollContent.innerHTML = html;
     });
   }
 
-  // live vote updates if already voted
+  // After this viewer has voted, keep their results bars live as other people vote.
+  // This listener fires on every vote from anyone. The guard (if !myVote return) means
+  // it does nothing for viewers who haven't voted yet — they're still on the vote buttons screen.
   onValue(ref(db, 'votes'), () => {
     if (!myVote) return;
     get(ref(db, 'poll')).then(s => { if (s.val()?.active) renderResults(s.val()); });
   });
-
-  setConnected(true);
 </script>
 </body>
 </html>

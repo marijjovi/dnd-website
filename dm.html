@@ -108,7 +108,7 @@
       justify-content: space-between;
     }
 
-    /* HANDS PANEL */
+    /* AUDIENCE PANEL */
     .tally-big {
       font-family: 'Cinzel', serif;
       font-size: 4rem;
@@ -121,54 +121,11 @@
       font-size: 0.9rem;
       color: var(--parchment-dim);
       font-style: italic;
-      margin-bottom: 1rem;
     }
-
-    .hand-list { max-height: 180px; overflow-y: auto; }
-    .hand-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 7px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.95rem;
-      animation: slideIn 0.3s ease forwards;
-    }
-    .hand-item:last-child { border-bottom: none; }
-    @keyframes slideIn { from { opacity:0; transform: translateX(-8px); } to { opacity:1; transform: none; } }
-
-    .dismiss-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      color: var(--parchment-dim);
-      font-family: 'Crimson Text', serif;
-      font-size: 0.78rem;
-      padding: 2px 8px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .dismiss-btn:hover { border-color: var(--blood); color: var(--blood-bright); }
-
-    .clear-all-btn {
-      background: transparent;
-      border: 1px solid var(--blood);
-      border-radius: 2px;
-      color: var(--blood-bright);
-      font-family: 'Cinzel', serif;
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      padding: 3px 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .clear-all-btn:hover { background: var(--blood); color: var(--parchment); }
-
-    .empty-state {
-      color: var(--parchment-dim);
-      font-style: italic;
-      font-size: 0.9rem;
-      padding: 0.5rem 0;
+    .chaos-divider {
+      margin: 1.25rem 0;
+      border: none;
+      border-top: 1px solid var(--border);
     }
 
     /* POLL BUILDER */
@@ -361,17 +318,14 @@
 
 <div class="grid">
 
-  <!-- HANDS -->
+  <!-- AUDIENCE -->
   <div class="panel">
-    <div class="panel-title">
-      <span>Raised Hands</span>
-      <button class="clear-all-btn" onclick="clearAllHands()">Clear All</button>
-    </div>
-    <div class="tally-big" id="hand-count">0</div>
-    <div class="tally-sub" id="hand-sub">No one needs you</div>
-    <div class="hand-list" id="hand-list">
-      <div class="empty-state">All quiet at the table.</div>
-    </div>
+    <div class="panel-title">Audience</div>
+    <div class="tally-big" id="live-count">0</div>
+    <div class="tally-sub">viewers live</div>
+    <hr class="chaos-divider" />
+    <div class="tally-big" id="fsu-count" style="color:var(--blood-bright)">0</div>
+    <div class="tally-sub" id="fsu-sub">want to fuck shit up</div>
   </div>
 
   <!-- POLL BUILDER -->
@@ -406,11 +360,10 @@
 
 <!-- ═══════════════════════ FIREBASE ═══════════════════════ -->
 <script type="module">
-  // firebase init stuff, we're probably moving it to the gitignore 
-  import { initializeApp } from 'firebase/app'; // likely need to connext to firebase for this! 
-  import { getDatabase } from 'firebase/database'; // cate idk if this is the right link 
-  // (its the one on their website but idk) but you lmk 
-  // ref, set, onValue, get, remove
+  import { initializeApp } from 'firebase/app';
+  import { getDatabase, ref, set, get, onValue, remove } from 'firebase/database';
+
+  // Paste your Firebase project credentials here (Firebase console → Project Settings → Your apps).
   const firebaseConfig = {
     apiKey: "PASTE_YOUR_API_KEY",
     authDomain: "PASTE_YOUR_AUTH_DOMAIN",
@@ -423,10 +376,9 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  // end of init 
 
-
- // basically conn checker on top (grey dot w 'connecting') 
+  // ── Connection indicator ──────────────────────────────
+  // Turns the header dot green ("Live") when Firebase data arrives, grey when offline.
   const connDot = document.getElementById('conn-dot');
   const connText = document.getElementById('conn-text');
   function setConn(ok) {
@@ -434,38 +386,28 @@
     connText.textContent = ok ? 'Live' : 'Disconnected';
   }
 
-  // ── Hands listener ────────────────────────────────────
-  onValue(ref(db, 'hands'), snap => {
+  // ── Live viewer count ─────────────────────────────────
+  // Each audience member writes presence/{sessionId}: true when they open the page and removes it
+  // on disconnect (via onDisconnect in index.html). Counting keys here gives the live total.
+  onValue(ref(db, 'presence'), snap => {
     setConn(true);
-    const data = snap.val() || {};
-    const entries = Object.values(data);
-    const countEl = document.getElementById('hand-count');
-    const subEl = document.getElementById('hand-sub');
-    const listEl = document.getElementById('hand-list');
-
-    countEl.textContent = entries.length;
-    subEl.textContent = entries.length === 0
-      ? 'No one needs you'
-      : `player${entries.length !== 1 ? 's' : ''} need${entries.length === 1 ? 's' : ''} your attention`;
-
-    if (entries.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">All quiet at the table.</div>';
-      return;
-    }
-    listEl.innerHTML = entries
-      .sort((a,b) => a.ts - b.ts)
-      .map(e => `
-        <div class="hand-item">
-          <span>✋ ${e.name}</span>
-          <button class="dismiss-btn" onclick="dismissHand('${e.name.replace(/[.#$[\]]/g,'_')}')">Dismiss</button>
-        </div>
-      `).join('');
+    const count = snap.val() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('live-count').textContent = count;
   });
 
-  window.clearAllHands = () => remove(ref(db, 'hands'));
-  window.dismissHand = key => set(ref(db, `hands/${key}`), null);
+  // ── FSU (chaos button) count ──────────────────────────
+  // Each audience member who presses "Fuck Shit Up" writes fsu/{sessionId}: true.
+  // Counting the keys tells the DM how many people want chaos right now.
+  onValue(ref(db, 'fsu'), snap => {
+    const count = snap.val() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('fsu-count').textContent = count;
+    document.getElementById('fsu-sub').textContent =
+      count === 1 ? 'viewer wants to fuck shit up' : 'viewers want to fuck shit up';
+  });
 
   // ── Options builder ───────────────────────────────────
+  // Local array mirrors the text inputs; oninput keeps it in sync without a form submit.
+  // The ✕ button only appears when there are more than 2 options (minimum for a valid poll).
   let options = ['', ''];
   function renderOptions() {
     document.getElementById('options-list').innerHTML = options.map((o, i) => `
@@ -476,33 +418,42 @@
     `).join('');
   }
   window.addOption = () => { options.push(''); renderOptions(); };
-  window.removeOpt = i => { options.splice(i,1); renderOptions(); };
+  window.removeOpt = i => { options.splice(i, 1); renderOptions(); };
   renderOptions();
 
   // ── Send poll ─────────────────────────────────────────
+  // Writes the poll object and blank vote counters to Firebase, then clears the fsu node
+  // so every audience member's "Fuck Shit Up" button resets automatically.
   window.sendPoll = async () => {
     const q = document.getElementById('poll-q').value.trim();
     const opts = options.filter(o => o.trim());
     if (!q) { alert('Add a question, DM!'); return; }
     if (opts.length < 2) { alert('Need at least 2 options!'); return; }
-    const poll = { question: q, options: opts, active: true, created: Date.now() };
-    await set(ref(db, 'poll'), poll);
+    await set(ref(db, 'poll'), { question: q, options: opts, active: true, created: Date.now() });
+    // Firebase keys can't contain . # $ [ ] / — replace with _ for vote counter keys.
     const votes = {};
-    opts.forEach(o => { votes[o.replace(/[.#$[\]/]/g,'_')] = 0; });
+    opts.forEach(o => { votes[o.replace(/[.#$[\]/]/g, '_')] = 0; });
     await set(ref(db, 'votes'), votes);
+    // Deleting the fsu node resets every audience chaos button in real time.
+    await remove(ref(db, 'fsu'));
   };
 
+  // ── Close poll ────────────────────────────────────────
+  // Fetches the current poll first to preserve question/options, then flips active to false.
+  // The audience page hides vote buttons as soon as active becomes false.
   window.closePoll = async () => {
     const snap = await get(ref(db, 'poll'));
     const poll = snap.val();
     if (poll) { poll.active = false; await set(ref(db, 'poll'), poll); }
   };
 
-  // ── Results listener ──────────────────────────────────
+  // ── Results listeners ─────────────────────────────────
+  // Two separate onValue listeners keep latestPoll and latestVotes fresh.
+  // Both call renderResults so the panel updates whenever either value changes.
   let latestPoll = null;
+  let latestVotes = {};
   onValue(ref(db, 'poll'), snap => { latestPoll = snap.val(); renderResults(); });
   onValue(ref(db, 'votes'), snap => { latestVotes = snap.val(); renderResults(); });
-  let latestVotes = {};
 
   function renderResults() {
     const poll = latestPoll;
@@ -516,18 +467,21 @@
       return;
     }
 
+    // Green pulsing badge while voting is open; grey "Closed" when the DM has ended it.
     badge.innerHTML = poll.active
       ? `<span class="live-badge"><span class="live-pulse"></span>Live</span>`
       : `<span class="closed-badge">Closed</span>`;
 
-    const total = Object.values(votes).reduce((a,b)=>a+b,0);
-    const maxVotes = Math.max(...Object.values(votes));
+    const total = Object.values(votes).reduce((a, b) => a + b, 0);
+    // Math.max with 0 as fallback avoids -Infinity when the votes object is empty.
+    const maxVotes = Math.max(...Object.values(votes), 0);
 
     let html = `<div class="result-question fade-in">${poll.question}</div>`;
     poll.options.forEach(opt => {
-      const key = opt.replace(/[.#$[\]/]/g,'_');
+      const key = opt.replace(/[.#$[\]/]/g, '_');
       const count = votes[key] || 0;
-      const pct = total > 0 ? Math.round(count/total*100) : 0;
+      const pct = total > 0 ? Math.round(count / total * 100) : 0;
+      // Both options tied for first get the brighter gold gradient; only highlights when votes > 0.
       const isLeader = count === maxVotes && count > 0;
       html += `<div class="result-row fade-in">
         <div class="result-meta"><span>${opt}</span><span>${count} vote${count!==1?'s':''} — ${pct}%</span></div>
