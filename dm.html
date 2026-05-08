@@ -406,14 +406,11 @@
 
 <!-- ═══════════════════════ FIREBASE ═══════════════════════ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  // tester
-
-  // ┌─────────────────────────────────────────────────┐
-  // │  PASTE YOUR FIREBASE CONFIG OBJECT HERE         │
-  // └─────────────────────────────────────────────────┘
+  // firebase init stuff, we're probably moving it to the gitignore 
+  import { initializeApp } from 'firebase/app'; // likely need to connext to firebase for this! 
+  import { getDatabase } from 'firebase/database'; // cate idk if this is the right link 
+  // (its the one on their website but idk) but you lmk 
+  // ref, set, onValue, get, remove
   const firebaseConfig = {
     apiKey: "PASTE_YOUR_API_KEY",
     authDomain: "PASTE_YOUR_AUTH_DOMAIN",
@@ -426,7 +423,10 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  // end of init 
 
+
+ // basically conn checker on top (grey dot w 'connecting') 
   const connDot = document.getElementById('conn-dot');
   const connText = document.getElementById('conn-text');
   function setConn(ok) {
