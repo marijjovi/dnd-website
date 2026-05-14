@@ -359,12 +359,11 @@
 </div>
 
 <!-- ═══════════════════════ FIREBASE ═══════════════════════ -->
-<script type="module">
-  import { initializeApp } from 'firebase/app';
-  import { getDatabase, ref, set, get, onValue, remove } from 'firebase/database';
+ <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getDatabase, ref, onValue, runTransaction, increment, update, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-  // Paste your Firebase project credentials here (Firebase console → Project Settings → Your apps).
-  const firebaseConfig = {
+    const firebaseConfig = {
     apiKey: "AIzaSyCJaz5USDV-8LD_fh9nVENJ7JZIIXn8nJA",
     authDomain: "dnd-project-35fcb.firebaseapp.com",
     databaseURL: "https://dnd-project-35fcb-default-rtdb.firebaseio.com",
