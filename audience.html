@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Oracle — Join the Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet" />
+
+  <!-- FIREBASE: Must match dm.html config exactly -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getDatabase, ref, onValue, runTransaction, increment, update, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyCJaz5USDV-8LD_fh9nVENJ7JZIIXn8nJA",
+    authDomain: "dnd-project-35fcb.firebaseapp.com",
+    databaseURL: "https://dnd-project-35fcb-default-rtdb.firebaseio.com",
+    projectId: "dnd-project-35fcb",
+    storageBucket: "dnd-project-35fcb.firebasestorage.app",
+    messagingSenderId: "500467332247",
+    appId: "1:500467332247:web:9a87b9f80a61b55bc125d2",
+    measurementId: "G-8RSNLY2KM9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ── Session ID (unique per browser tab, stored in sessionStorage) ──
+    let sessionId = sessionStorage.getItem('oracle_session');
+    if (!sessionId) {
+      sessionId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      sessionStorage.setItem('oracle_session', sessionId);
+      // Count this as a new scan
+      runTransaction(ref(db, 'crowd/total_users'), v => (v || 0) + 1);
+    }
+
+    // ── Per-session state (localStorage survives refresh, tied to this device) ──
+    const hasPressedKey = 'oracle_pressed_' + sessionId;
+    const hasVotedKey   = 'oracle_voted_' + sessionId;
+
+    // ── DOM ──────────────────────────────────────────────────────────
+    const buttonScreen = document.getElementById('button-screen');
+    const pollScreen   = document.getElementById('poll-screen');
+    const doSomethingBtn = document.getElementById('do-something-btn');
+    const pressedMsg   = document.getElementById('pressed-msg');
+    const pollQuestion = document.getElementById('poll-question');
+    const pollOptions  = document.getElementById('poll-options');
+    const voteConfirm  = document.getElementById('vote-confirm');
+    const rippleEl     = document.getElementById('ripple-container');
+
+    // ── Ripple effect ────────────────────────────────────────────────
+    function triggerRipple() {
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          const r = document.createElement('div');
+          r.className = 'ripple';
+          rippleEl.appendChild(r);
+          setTimeout(() => r.remove(), 1200);
+        }, i * 200);
+      }
+    }
+
+    // ── Button press ─────────────────────────────────────────────────
+    doSomethingBtn.addEventListener('click', async () => {
+      if (localStorage.getItem(hasPressedKey)) return;
+      localStorage.setItem(hasPressedKey, '1');
+      triggerRipple();
+      doSomethingBtn.classList.add('pressed');
+      doSomethingBtn.disabled = true;
+      await runTransaction(ref(db, 'crowd/button_count'), v => (v || 0) + 1);
+      setTimeout(() => {
+        doSomethingBtn.style.display = 'none';
+        pressedMsg.style.display = 'flex';
+      }, 600);
+    });
+
+    // ── Watch poll state ─────────────────────────────────────────────
+    let prevPollActive = null;
+
+    onValue(ref(db, 'poll'), (snap) => {
+      const data = snap.val() || {};
+      const active = data.active === true;
+
+      // Poll just became inactive → clear vote so button resets
+      if (prevPollActive === true && !active) {
+        localStorage.removeItem(hasVotedKey);
+      }
+
+      // Poll just became active → clear button-press state (new round)
+      if (!prevPollActive && active) {
+        localStorage.removeItem(hasPressedKey);
+      }
+
+      prevPollActive = active;
+
+      if (active) {
+        showPollScreen(data);
+      } else {
+        showButtonScreen();
+      }
+    });
+
+    // ── Show button screen ───────────────────────────────────────────
+    function showButtonScreen() {
+      pollScreen.style.display = 'none';
+      buttonScreen.style.display = 'flex';
+
+      const alreadyPressed = !!localStorage.getItem(hasPressedKey);
+      if (alreadyPressed) {
+        doSomethingBtn.style.display = 'none';
+        pressedMsg.style.display = 'flex';
+      } else {
+        doSomethingBtn.style.display = 'flex';
+        doSomethingBtn.classList.remove('pressed');
+        doSomethingBtn.disabled = false;
+        pressedMsg.style.display = 'none';
+      }
+    }
+
+    // ── Show poll screen ─────────────────────────────────────────────
+    function showPollScreen(data) {
+      buttonScreen.style.display = 'none';
+      pollScreen.style.display = 'flex';
+
+      const options = data.options || {};
+      const question = data.question || 'What do you choose?';
+      pollQuestion.textContent = question;
+
+      const alreadyVoted = localStorage.getItem(hasVotedKey);
+
+      if (alreadyVoted) {
+        pollOptions.style.display = 'none';
+        voteConfirm.style.display = 'flex';
+        voteConfirm.querySelector('.voted-choice').textContent =
+          `You voted: ${alreadyVoted} — ${options[alreadyVoted] || ''}`;
+      } else {
+        voteConfirm.style.display = 'none';
+        pollOptions.style.display = 'grid';
+        pollOptions.innerHTML = '';
+
+        const labels = Object.keys(options);
+        labels.forEach(key => {
+          const btn = document.createElement('button');
+          btn.className = 'vote-btn';
+          btn.innerHTML = `<span class="vote-key">${key}</span><span class="vote-text">${options[key]}</span>`;
+          btn.addEventListener('click', async () => {
+            if (localStorage.getItem(hasVotedKey)) return;
+            localStorage.setItem(hasVotedKey, key);
+
+            // Disable all options immediately
+            pollOptions.querySelectorAll('.vote-btn').forEach(b => b.disabled = true);
+            btn.classList.add('selected');
+
+            await runTransaction(ref(db, `poll/votes/${key}`), v => (v || 0) + 1);
+
+            setTimeout(() => {
+              pollOptions.style.display = 'none';
+              voteConfirm.style.display = 'flex';
+              voteConfirm.querySelector('.voted-choice').textContent =
+                `You voted: ${key} — ${options[key]}`;
+            }, 500);
+          });
+          pollOptions.appendChild(btn);
+        });
+      }
+    }
+
+  </script>
+
+  <style>
+    :root {
+      --parchment: #f5e6c8;
+      --parchment-dark: #e8d5a3;
+      --ink: #1a0a00;
+      --gold: #c9922a;
+      --gold-bright: #f0b429;
+      --crimson: #8b1a1a;
+      --crimson-bright: #c0392b;
+      --stone: #0d0a06;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Crimson Pro', Georgia, serif;
+      background-color: var(--stone);
+      background-image:
+        radial-gradient(ellipse at 50% 40%, rgba(139,26,26,0.15) 0%, transparent 65%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9922a' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      color: var(--parchment);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .oracle-header {
+      text-align: center;
+      padding: 24px 20px 16px;
+      flex-shrink: 0;
+    }
+    .oracle-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(22px, 6vw, 36px);
+      font-weight: 900;
+      color: var(--gold-bright);
+      text-shadow: 0 0 40px rgba(240,180,41,0.4);
+      letter-spacing: 4px;
+    }
+    .oracle-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 6px;
+      color: rgba(201,146,42,0.5);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .divider {
+      font-size: 12px;
+      color: rgba(201,146,42,0.25);
+      letter-spacing: 10px;
+      text-align: center;
+      margin: 4px 0 0;
+    }
+
+    /* ── Screens ── */
+    #button-screen,
+    #poll-screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* ── Ripple ── */
+    #ripple-container {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .ripple {
+      position: absolute;
+      width: 80px; height: 80px;
+      top: -40px; left: -40px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      animation: ripple-out 1.2s ease-out forwards;
+    }
+    @keyframes ripple-out {
+      from { transform: scale(1); opacity: 0.8; }
+      to   { transform: scale(6); opacity: 0; }
+    }
+
+    /* ── Do Something Button ── */
+    #do-something-btn {
+      position: relative;
+      z-index: 1;
+      width: min(260px, 70vw);
+      height: min(260px, 70vw);
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      background: radial-gradient(circle at 40% 35%, #c0392b, #7b1010);
+      box-shadow:
+        0 0 0 6px rgba(139,26,26,0.4),
+        0 0 0 12px rgba(139,26,26,0.15),
+        0 8px 60px rgba(192,57,43,0.5),
+        inset 0 -8px 20px rgba(0,0,0,0.4),
+        inset 0 8px 20px rgba(255,255,255,0.08);
+      transition: all 0.15s ease;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 6px rgba(139,26,26,0.4), 0 0 0 12px rgba(139,26,26,0.15), 0 8px 60px rgba(192,57,43,0.5), inset 0 -8px 20px rgba(0,0,0,0.4), inset 0 8px 20px rgba(255,255,255,0.08); }
+      50%       { box-shadow: 0 0 0 8px rgba(139,26,26,0.5), 0 0 0 20px rgba(139,26,26,0.1), 0 8px 80px rgba(192,57,43,0.7), inset 0 -8px 20px rgba(0,0,0,0.4), inset 0 8px 20px rgba(255,255,255,0.08); }
+    }
+    #do-something-btn:active:not(:disabled) {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 4px rgba(139,26,26,0.4), 0 4px 30px rgba(192,57,43,0.4), inset 0 -4px 10px rgba(0,0,0,0.5);
+    }
+    #do-something-btn.pressed {
+      background: radial-gradient(circle at 40% 35%, #555, #222);
+      animation: none;
+    }
+    #do-something-btn:disabled { cursor: not-allowed; }
+
+    .btn-icon {
+      font-size: 36px;
+      line-height: 1;
+    }
+    .btn-label {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(13px, 3vw, 16px);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--parchment);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    /* ── Pressed message ── */
+    #pressed-msg {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .pressed-rune {
+      font-size: 48px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .pressed-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+    }
+    .pressed-sub {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      color: rgba(245,230,200,0.5);
+      font-size: 16px;
+    }
+
+    /* ── Poll screen ── */
+    #poll-screen {
+      overflow-y: auto;
+      justify-content: flex-start;
+      padding-top: 16px;
+    }
+
+    .poll-header {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    #poll-question {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(18px, 4vw, 26px);
+      color: var(--parchment);
+      text-align: center;
+      line-height: 1.4;
+      margin-bottom: 32px;
+      max-width: 500px;
+      padding: 0 8px;
+    }
+
+    #poll-options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .vote-btn {
+      background: linear-gradient(135deg, rgba(42,35,24,0.95), rgba(26,10,0,0.9));
+      border: 1px solid rgba(201,146,42,0.3);
+      border-radius: 4px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+    .vote-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,146,42,0.3), transparent);
+    }
+    .vote-btn:not(:disabled):hover {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(60,48,30,0.95), rgba(42,20,0,0.9));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(201,146,42,0.15);
+    }
+    .vote-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .vote-btn.selected {
+      border-color: var(--gold-bright);
+      background: linear-gradient(135deg, rgba(80,60,20,0.95), rgba(60,30,0,0.9));
+      box-shadow: 0 0 20px rgba(240,180,41,0.3);
+    }
+
+    .vote-key {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 22px;
+      color: var(--gold-bright);
+      width: 30px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .vote-text {
+      font-family: 'Crimson Pro', serif;
+      font-size: 18px;
+      color: var(--parchment);
+      line-height: 1.3;
+    }
+
+    /* ── Vote confirm ── */
+    #vote-confirm {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+      padding: 20px;
+    }
+    .voted-icon { font-size: 48px; animation: float 3s ease-in-out infinite; }
+    .voted-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+    }
+    .voted-choice {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: rgba(245,230,200,0.7);
+    }
+    .voted-wait {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(245,230,200,0.3);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="oracle-header">
+    <div class="oracle-title">The Oracle</div>
+    <div class="oracle-sub">Speak Your Fate</div>
+    <div class="divider">⚔ ✦ ⚔</div>
+  </div>
+
+  <!-- ── BUTTON SCREEN ── -->
+  <div id="button-screen">
+    <div id="ripple-container"></div>
+
+    <button id="do-something-btn">
+      <span class="btn-icon">⚔</span>
+      <span class="btn-label">Do Something</span>
+    </button>
+
+    <div id="pressed-msg">
+      <div class="pressed-rune">🎲</div>
+      <div class="pressed-title">Fate Recorded</div>
+      <div class="pressed-sub">The dungeon master sees your intent.<br/>Await your next challenge.</div>
+    </div>
+  </div>
+
+  <!-- ── POLL SCREEN ── -->
+  <div id="poll-screen">
+    <div class="poll-header">⚔ The Oracle Speaks ⚔</div>
+    <div id="poll-question"></div>
+
+    <div id="poll-options"></div>
+
+    <div id="vote-confirm">
+      <div class="voted-icon">🎲</div>
+      <div class="voted-title">Your Vote is Cast</div>
+      <div class="voted-choice"></div>
+      <div class="voted-wait">Awaiting the dungeon master's decree...</div>
+    </div>
+  </div>
+
+</body>
+</html>

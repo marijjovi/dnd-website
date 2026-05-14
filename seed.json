@@ -1,0 +1,12 @@
+{
+  "crowd": {
+    "total_users": 0,
+    "button_count": 0
+  },
+  "poll": {
+    "active": false,
+    "question": "",
+    "options": {},
+    "votes": {}
+  }
+}
