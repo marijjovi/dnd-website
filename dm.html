@@ -10,20 +10,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <!-- FIREBASE: Replace with your own project config -->
+   <script src="firebase-config.js"></script>
+   
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
     import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-    const firebaseConfig = {
-    apiKey: "AIzaSyCJaz5USDV-8LD_fh9nVENJ7JZIIXn8nJA",
-    authDomain: "dnd-project-35fcb.firebaseapp.com",
-    databaseURL: "https://dnd-project-35fcb-default-rtdb.firebaseio.com",
-    projectId: "dnd-project-35fcb",
-    storageBucket: "dnd-project-35fcb.firebasestorage.app",
-    messagingSenderId: "500467332247",
-    appId: "1:500467332247:web:9a87b9f80a61b55bc125d2",
-    measurementId: "G-8RSNLY2KM9"
-    };
+    <!-- Firebase config — not committed to git -->
+    
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
