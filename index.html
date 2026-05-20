@@ -318,19 +318,20 @@
 </div>
 
 <!-- ═══════════════════════ FIREBASE ═══════════════════════ -->
-<script type="module">
-  import { initializeApp } from 'firebase/app';
-  import { getDatabase, ref, set, get, onValue, onDisconnect } from 'firebase/database';
+ <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getDatabase, ref, onValue, runTransaction, increment, update, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "PASTE_YOUR_API_KEY",
-    authDomain: "PASTE_YOUR_AUTH_DOMAIN",
-    databaseURL: "PASTE_YOUR_DATABASE_URL",
-    projectId: "PASTE_YOUR_PROJECT_ID",
-    storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
-    messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
-    appId: "PASTE_YOUR_APP_ID"
-  };
+    const firebaseConfig = {
+    apiKey: "AIzaSyCJaz5USDV-8LD_fh9nVENJ7JZIIXn8nJA",
+    authDomain: "dnd-project-35fcb.firebaseapp.com",
+    databaseURL: "https://dnd-project-35fcb-default-rtdb.firebaseio.com",
+    projectId: "dnd-project-35fcb",
+    storageBucket: "dnd-project-35fcb.firebasestorage.app",
+    messagingSenderId: "500467332247",
+    appId: "1:500467332247:web:9a87b9f80a61b55bc125d2",
+    measurementId: "G-8RSNLY2KM9"
+    };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
