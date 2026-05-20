@@ -190,11 +190,9 @@
 
     body {
       font-family: 'Crimson Pro', Georgia, serif;
-      background-color: var(--stone);
-      background-image:
-        radial-gradient(ellipse at 50% 40%, rgba(139,26,26,0.15) 0%, transparent 65%),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9922a' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      color: var(--parchment);
+      background-color: #000000;
+      background-image: none;
+      color: #cccccc;
       display: flex;
       flex-direction: column;
     }
@@ -209,21 +207,21 @@
       font-family: 'Cinzel Decorative', serif;
       font-size: clamp(22px, 6vw, 36px);
       font-weight: 900;
-      color: var(--gold-bright);
-      text-shadow: 0 0 40px rgba(240,180,41,0.4);
+      color: #ffffff;
+      text-shadow: 0 0 40px rgba(255,255,255,0.3);
       letter-spacing: 4px;
     }
     .oracle-sub {
       font-family: 'Cinzel', serif;
       font-size: 10px;
       letter-spacing: 6px;
-      color: rgba(201,146,42,0.5);
+      color: #999999;
       text-transform: uppercase;
       margin-top: 4px;
     }
     .divider {
       font-size: 12px;
-      color: rgba(201,146,42,0.25);
+      color: rgba(255,255,255,0.15);
       letter-spacing: 10px;
       text-align: center;
       margin: 4px 0 0;
@@ -254,7 +252,7 @@
       width: 80px; height: 80px;
       top: -40px; left: -40px;
       border-radius: 50%;
-      border: 2px solid var(--gold);
+      border: 2px solid #00ff00;
       animation: ripple-out 1.2s ease-out forwards;
     }
     @keyframes ripple-out {
@@ -276,23 +274,23 @@
       justify-content: center;
       flex-direction: column;
       gap: 8px;
-      background: radial-gradient(circle at 40% 35%, #c0392b, #7b1010);
+      background: radial-gradient(circle at 40% 35%, #00ff00, #00aa00);
       box-shadow:
-        0 0 0 6px rgba(139,26,26,0.4),
-        0 0 0 12px rgba(139,26,26,0.15),
-        0 8px 60px rgba(192,57,43,0.5),
+        0 0 0 6px rgba(0,255,0,0.4),
+        0 0 0 12px rgba(0,255,0,0.15),
+        0 8px 60px rgba(0,255,0,0.6),
         inset 0 -8px 20px rgba(0,0,0,0.4),
-        inset 0 8px 20px rgba(255,255,255,0.08);
+        inset 0 8px 20px rgba(255,255,255,0.1);
       transition: all 0.15s ease;
       animation: pulse-glow 3s ease-in-out infinite;
     }
     @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 0 6px rgba(139,26,26,0.4), 0 0 0 12px rgba(139,26,26,0.15), 0 8px 60px rgba(192,57,43,0.5), inset 0 -8px 20px rgba(0,0,0,0.4), inset 0 8px 20px rgba(255,255,255,0.08); }
-      50%       { box-shadow: 0 0 0 8px rgba(139,26,26,0.5), 0 0 0 20px rgba(139,26,26,0.1), 0 8px 80px rgba(192,57,43,0.7), inset 0 -8px 20px rgba(0,0,0,0.4), inset 0 8px 20px rgba(255,255,255,0.08); }
+      0%, 100% { box-shadow: 0 0 0 6px rgba(0,255,0,0.4), 0 0 0 12px rgba(0,255,0,0.15), 0 8px 60px rgba(0,255,0,0.6), inset 0 -8px 20px rgba(0,0,0,0.4), inset 0 8px 20px rgba(255,255,255,0.1); }
+      50%       { box-shadow: 0 0 0 8px rgba(0,255,0,0.5), 0 0 0 20px rgba(0,255,0,0.1), 0 8px 80px rgba(0,255,0,0.8), inset 0 -8px 20px rgba(0,0,0,0.4), inset 0 8px 20px rgba(255,255,255,0.1); }
     }
     #do-something-btn:active:not(:disabled) {
       transform: scale(0.95);
-      box-shadow: 0 0 0 4px rgba(139,26,26,0.4), 0 4px 30px rgba(192,57,43,0.4), inset 0 -4px 10px rgba(0,0,0,0.5);
+      box-shadow: 0 0 0 4px rgba(0,255,0,0.4), 0 4px 30px rgba(0,255,0,0.6), inset 0 -4px 10px rgba(0,0,0,0.5);
     }
     #do-something-btn.pressed {
       background: radial-gradient(circle at 40% 35%, #555, #222);
@@ -309,7 +307,7 @@
       font-size: clamp(13px, 3vw, 16px);
       letter-spacing: 4px;
       text-transform: uppercase;
-      color: var(--parchment);
+      color: #000000;
       text-shadow: 0 1px 3px rgba(0,0,0,0.5);
     }
 
@@ -334,12 +332,12 @@
       font-size: 18px;
       letter-spacing: 4px;
       text-transform: uppercase;
-      color: var(--gold-bright);
+      color: #00ff00;
     }
     .pressed-sub {
       font-family: 'Crimson Pro', serif;
       font-style: italic;
-      color: rgba(245,230,200,0.5);
+      color: #999999;
       font-size: 16px;
     }
 
@@ -355,7 +353,7 @@
       font-size: 10px;
       letter-spacing: 6px;
       text-transform: uppercase;
-      color: var(--gold);
+      color: #cccccc;
       margin-bottom: 16px;
       text-align: center;
     }
@@ -363,7 +361,7 @@
     #poll-question {
       font-family: 'Cinzel', serif;
       font-size: clamp(18px, 4vw, 26px);
-      color: var(--parchment);
+      color: #cccccc;
       text-align: center;
       line-height: 1.4;
       margin-bottom: 32px;
@@ -380,8 +378,8 @@
     }
 
     .vote-btn {
-      background: linear-gradient(135deg, rgba(42,35,24,0.95), rgba(26,10,0,0.9));
-      border: 1px solid rgba(201,146,42,0.3);
+      background: linear-gradient(135deg, rgba(30,30,30,0.95), rgba(20,20,20,0.9));
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 4px;
       padding: 18px 20px;
       display: flex;
@@ -398,25 +396,25 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,146,42,0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
     }
     .vote-btn:not(:disabled):hover {
-      border-color: var(--gold);
-      background: linear-gradient(135deg, rgba(60,48,30,0.95), rgba(42,20,0,0.9));
+      border-color: #cccccc;
+      background: linear-gradient(135deg, rgba(50,50,50,0.95), rgba(40,40,40,0.9));
       transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(201,146,42,0.15);
+      box-shadow: 0 4px 20px rgba(255,255,255,0.1);
     }
     .vote-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .vote-btn.selected {
-      border-color: var(--gold-bright);
-      background: linear-gradient(135deg, rgba(80,60,20,0.95), rgba(60,30,0,0.9));
-      box-shadow: 0 0 20px rgba(240,180,41,0.3);
+      border-color: #00ff00;
+      background: linear-gradient(135deg, rgba(0,50,0,0.95), rgba(0,40,0,0.9));
+      box-shadow: 0 0 20px rgba(0,255,0,0.4);
     }
 
     .vote-key {
       font-family: 'Cinzel Decorative', serif;
       font-size: 22px;
-      color: var(--gold-bright);
+      color: #00ff00;
       width: 30px;
       text-align: center;
       flex-shrink: 0;
@@ -424,7 +422,7 @@
     .vote-text {
       font-family: 'Crimson Pro', serif;
       font-size: 18px;
-      color: var(--parchment);
+      color: #cccccc;
       line-height: 1.3;
     }
 
@@ -443,20 +441,20 @@
       font-size: 18px;
       letter-spacing: 4px;
       text-transform: uppercase;
-      color: var(--gold-bright);
+      color: #00ff00;
     }
     .voted-choice {
       font-family: 'Crimson Pro', serif;
       font-style: italic;
       font-size: 18px;
-      color: rgba(245,230,200,0.7);
+      color: #cccccc;
     }
     .voted-wait {
       font-family: 'Cinzel', serif;
       font-size: 10px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: rgba(245,230,200,0.3);
+      color: #999999;
       margin-top: 8px;
     }
   </style>
@@ -465,7 +463,7 @@
 
   <div class="oracle-header">
     <div class="oracle-title">The Oracle</div>
-    <div class="oracle-sub">Speak Your Fate</div>
+    <div class="oracle-sub">Invoke Chaos, Speak Their Fate</div>
     <div class="divider">⚔ ✦ ⚔</div>
   </div>
 
@@ -475,7 +473,7 @@
 
     <button id="do-something-btn">
       <span class="btn-icon">⚔</span>
-      <span class="btn-label">Do Something</span>
+      <span class="btn-label">Fuck Shit Up</span>
     </button>
 
     <div id="pressed-msg">
@@ -494,7 +492,7 @@
 
     <div id="vote-confirm">
       <div class="voted-icon">🎲</div>
-      <div class="voted-title">Your Vote is Cast</div>
+      <div class="voted-title">Your Truth Has Been Spoken</div>
       <div class="voted-choice"></div>
       <div class="voted-wait">Awaiting the dungeon master's decree...</div>
     </div>

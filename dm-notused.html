@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D&D Session — DM Command</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0e0b07;
+      --surface: #1c1509;
+      --surface2: #261d0d;
+      --border: #3d2e10;
+      --border-bright: #6b4f22;
+      --gold: #c9973a;
+      --gold-dim: #8a6420;
+      --parchment: #f5ead6;
+      --parchment-dim: #c8b48a;
+      --blood: #7a1c1c;
+      --blood-bright: #c43030;
+      --ink: #1a1206;
+      --green: #2a5c2a;
+      --green-bright: #4a9c4a;
+    }
+
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 10% 80%, rgba(60,30,5,0.5) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 10%, rgba(40,20,5,0.4) 0%, transparent 50%);
+      color: var(--parchment);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .header {
+      max-width: 900px;
+      margin: 0 auto 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .header-icon { font-size: 2rem; }
+    .header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+    }
+    .header p { font-size: 0.85rem; color: var(--parchment-dim); font-style: italic; }
+
+    .connection-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      color: var(--parchment-dim);
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #555; transition: background 0.3s; }
+    .dot.on { background: var(--green-bright); box-shadow: 0 0 6px rgba(74,156,74,0.6); }
+
+    .grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+    }
+
+    .panel-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* AUDIENCE PANEL */
+    .tally-big {
+      font-family: 'Cinzel', serif;
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .tally-sub {
+      font-size: 0.9rem;
+      color: var(--parchment-dim);
+      font-style: italic;
+    }
+    .chaos-divider {
+      margin: 1.25rem 0;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* POLL BUILDER */
+    label.lbl {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 5px;
+      margin-top: 12px;
+    }
+    label.lbl:first-of-type { margin-top: 0; }
+
+    input[type="text"], textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-bottom: 2px solid var(--gold-dim);
+      border-radius: 2px 2px 0 0;
+      padding: 8px 10px;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.95rem;
+      color: var(--parchment);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus { border-bottom-color: var(--gold); }
+    input::placeholder, textarea::placeholder { color: #6b5a3a; }
+    textarea { resize: vertical; min-height: 60px; }
+
+    .opt-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+    .opt-row input { flex: 1; }
+    .rm-btn {
+      background: transparent;
+      border: none;
+      color: #6b5a3a;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px 6px;
+      border-radius: 2px;
+      transition: color 0.15s;
+    }
+    .rm-btn:hover { color: var(--blood-bright); }
+
+    .add-opt-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 2px;
+      color: var(--parchment-dim);
+      font-family: 'Crimson Text', serif;
+      font-size: 0.9rem;
+      padding: 7px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 2px;
+    }
+    .add-opt-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+    .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+
+    .btn-send {
+      flex: 1;
+      background: var(--gold-dim);
+      border: none;
+      border-radius: 2px;
+      color: var(--ink);
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 2px 0 #4a3010;
+    }
+    .btn-send:hover { background: var(--gold); }
+    .btn-send:active { transform: translateY(1px); box-shadow: 0 1px 0 #4a3010; }
+
+    .btn-close {
+      background: transparent;
+      border: 1px solid var(--blood);
+      border-radius: 2px;
+      color: var(--blood-bright);
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-close:hover { background: var(--blood); color: var(--parchment); }
+
+    /* RESULTS PANEL */
+    .results-panel { grid-column: 1 / -1; }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(42,92,42,0.3);
+      border: 1px solid var(--green);
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--green-bright);
+    }
+    .live-pulse {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green-bright);
+      animation: livePulse 1.5s infinite;
+    }
+    @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .closed-badge {
+      display: inline-block;
+      border: 1px solid var(--border-bright);
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--parchment-dim);
+    }
+
+    .result-question {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--parchment);
+      margin-bottom: 1rem;
+    }
+
+    .result-row { margin-bottom: 12px; }
+    .result-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--parchment-dim);
+      margin-bottom: 4px;
+    }
+    .result-meta span:first-child { color: var(--parchment); font-weight: 600; }
+    .track {
+      height: 10px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--gold-dim), var(--gold));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .fill.leader { background: linear-gradient(to right, #b08000, #e8b840); }
+
+    .vote-total {
+      font-size: 0.85rem;
+      color: var(--parchment-dim);
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+
+    .no-results { color: var(--parchment-dim); font-style: italic; font-size: 0.9rem; }
+
+    @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: none; } }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-icon">🎲</span>
+    <div>
+      <h1>DM Command</h1>
+      <p>Session control panel</p>
+    </div>
+  </div>
+  <div class="connection-pill">
+    <span class="dot" id="conn-dot"></span>
+    <span id="conn-text">Connecting...</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- AUDIENCE -->
+  <div class="panel">
+    <div class="panel-title">Audience</div>
+    <div class="tally-big" id="live-count">0</div>
+    <div class="tally-sub">viewers live</div>
+    <hr class="chaos-divider" />
+    <div class="tally-big" id="fsu-count" style="color:var(--blood-bright)">0</div>
+    <div class="tally-sub" id="fsu-sub">want to fuck shit up</div>
+  </div>
+
+  <!-- POLL BUILDER -->
+  <div class="panel">
+    <div class="panel-title">Send a Poll</div>
+
+    <label class="lbl">Question</label>
+    <input type="text" id="poll-q" placeholder="What does the party do?" />
+
+    <label class="lbl" style="margin-top:12px;">Options</label>
+    <div id="options-list"></div>
+    <button class="add-opt-btn" onclick="addOption()">+ Add option</button>
+
+    <div class="btn-row">
+      <button class="btn-send" onclick="sendPoll()">⚡ Decree It</button>
+      <button class="btn-close" onclick="closePoll()">Close</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="panel results-panel">
+    <div class="panel-title">
+      <span>Poll Results</span>
+      <span id="poll-status-badge"></span>
+    </div>
+    <div id="results-inner">
+      <div class="no-results">No poll active yet. Send one above.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════ FIREBASE ═══════════════════════ -->
+<script type="module">
+  import { initializeApp } from 'firebase/app';
+  import { getDatabase, ref, set, get, onValue, remove } from 'firebase/database';
+
+  // Paste your Firebase project credentials here (Firebase console → Project Settings → Your apps).
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJaz5USDV-8LD_fh9nVENJ7JZIIXn8nJA",
+    authDomain: "dnd-project-35fcb.firebaseapp.com",
+    databaseURL: "https://dnd-project-35fcb-default-rtdb.firebaseio.com",
+    projectId: "dnd-project-35fcb",
+    storageBucket: "dnd-project-35fcb.firebasestorage.app",
+    messagingSenderId: "500467332247",
+    appId: "1:500467332247:web:9a87b9f80a61b55bc125d2",
+    measurementId: "G-8RSNLY2KM9"
+    };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ── Connection indicator ──────────────────────────────
+  // Turns the header dot green ("Live") when Firebase data arrives, grey when offline.
+  const connDot = document.getElementById('conn-dot');
+  const connText = document.getElementById('conn-text');
+  function setConn(ok) {
+    connDot.className = 'dot ' + (ok ? 'on' : '');
+    connText.textContent = ok ? 'Live' : 'Disconnected';
+  }
+
+  // ── Live viewer count ─────────────────────────────────
+  // Each audience member writes presence/{sessionId}: true when they open the page and removes it
+  // on disconnect (via onDisconnect in index.html). Counting keys here gives the live total.
+  onValue(ref(db, 'presence'), snap => {
+    setConn(true);
+    const count = snap.val() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('live-count').textContent = count;
+  });
+
+  // ── FSU (chaos button) count ──────────────────────────
+  // Each audience member who presses "Fuck Shit Up" writes fsu/{sessionId}: true.
+  // Counting the keys tells the DM how many people want chaos right now.
+  onValue(ref(db, 'fsu'), snap => {
+    const count = snap.val() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('fsu-count').textContent = count;
+    document.getElementById('fsu-sub').textContent =
+      count === 1 ? 'viewer wants to fuck shit up' : 'viewers want to fuck shit up';
+  });
+
+  // ── Options builder ───────────────────────────────────
+  // Local array mirrors the text inputs; oninput keeps it in sync without a form submit.
+  // The ✕ button only appears when there are more than 2 options (minimum for a valid poll).
+  let options = ['', ''];
+  function renderOptions() {
+    document.getElementById('options-list').innerHTML = options.map((o, i) => `
+      <div class="opt-row">
+        <input type="text" placeholder="Option ${i+1}" value="${o.replace(/"/g,'&quot;')}" oninput="options[${i}]=this.value" />
+        ${options.length > 2 ? `<button class="rm-btn" onclick="removeOpt(${i})">✕</button>` : ''}
+      </div>
+    `).join('');
+  }
+  window.addOption = () => { options.push(''); renderOptions(); };
+  window.removeOpt = i => { options.splice(i, 1); renderOptions(); };
+  renderOptions();
+
+  // ── Send poll ─────────────────────────────────────────
+  // Writes the poll object and blank vote counters to Firebase, then clears the fsu node
+  // so every audience member's "Fuck Shit Up" button resets automatically.
+  window.sendPoll = async () => {
+    const q = document.getElementById('poll-q').value.trim();
+    const opts = options.filter(o => o.trim());
+    if (!q) { alert('Add a question, DM!'); return; }
+    if (opts.length < 2) { alert('Need at least 2 options!'); return; }
+    await set(ref(db, 'poll'), { question: q, options: opts, active: true, created: Date.now() });
+    // Firebase keys can't contain . # $ [ ] / — replace with _ for vote counter keys.
+    const votes = {};
+    opts.forEach(o => { votes[o.replace(/[.#$[\]/]/g, '_')] = 0; });
+    await set(ref(db, 'votes'), votes);
+    // Deleting the fsu node resets every audience chaos button in real time.
+    await remove(ref(db, 'fsu'));
+  };
+
+  // ── Close poll ────────────────────────────────────────
+  // Fetches the current poll first to preserve question/options, then flips active to false.
+  // The audience page hides vote buttons as soon as active becomes false.
+  window.closePoll = async () => {
+    const snap = await get(ref(db, 'poll'));
+    const poll = snap.val();
+    if (poll) { poll.active = false; await set(ref(db, 'poll'), poll); }
+  };
+
+  // ── Results listeners ─────────────────────────────────
+  // Two separate onValue listeners keep latestPoll and latestVotes fresh.
+  // Both call renderResults so the panel updates whenever either value changes.
+  let latestPoll = null;
+  let latestVotes = {};
+  onValue(ref(db, 'poll'), snap => { latestPoll = snap.val(); renderResults(); });
+  onValue(ref(db, 'votes'), snap => { latestVotes = snap.val(); renderResults(); });
+
+  function renderResults() {
+    const poll = latestPoll;
+    const votes = latestVotes || {};
+    const inner = document.getElementById('results-inner');
+    const badge = document.getElementById('poll-status-badge');
+
+    if (!poll) {
+      badge.innerHTML = '';
+      inner.innerHTML = '<div class="no-results">No poll active yet. Send one above.</div>';
+      return;
+    }
+
+    // Green pulsing badge while voting is open; grey "Closed" when the DM has ended it.
+    badge.innerHTML = poll.active
+      ? `<span class="live-badge"><span class="live-pulse"></span>Live</span>`
+      : `<span class="closed-badge">Closed</span>`;
+
+    const total = Object.values(votes).reduce((a, b) => a + b, 0);
+    // Math.max with 0 as fallback avoids -Infinity when the votes object is empty.
+    const maxVotes = Math.max(...Object.values(votes), 0);
+
+    let html = `<div class="result-question fade-in">${poll.question}</div>`;
+    poll.options.forEach(opt => {
+      const key = opt.replace(/[.#$[\]/]/g, '_');
+      const count = votes[key] || 0;
+      const pct = total > 0 ? Math.round(count / total * 100) : 0;
+      // Both options tied for first get the brighter gold gradient; only highlights when votes > 0.
+      const isLeader = count === maxVotes && count > 0;
+      html += `<div class="result-row fade-in">
+        <div class="result-meta"><span>${opt}</span><span>${count} vote${count!==1?'s':''} — ${pct}%</span></div>
+        <div class="track"><div class="fill ${isLeader?'leader':''}" style="width:${pct}%"></div></div>
+      </div>`;
+    });
+    html += `<p class="vote-total">${total} total vote${total!==1?'s':''}</p>`;
+    inner.innerHTML = html;
+  }
+
+  setConn(true);
+</script>
+</body>
+</html>
