@@ -17,11 +17,21 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // ── Session ID (unique per browser tab, stored in sessionStorage) ──
-    let sessionId = sessionStorage.getItem('oracle_session');
+    // ── Session version: clear local state when DM resets ─────────────
+    const versionSnap = await get(ref(db, 'crowd/sessionVersion'));
+    const currentVersion = String(versionSnap.val() || 0);
+    if (localStorage.getItem('oracle_session_version') !== currentVersion) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('oracle_'))
+        .forEach(k => localStorage.removeItem(k));
+      localStorage.setItem('oracle_session_version', currentVersion);
+    }
+
+    // ── Session ID ─────────────────────────────────────────────────────
+    let sessionId = localStorage.getItem('oracle_session');
     if (!sessionId) {
       sessionId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-      sessionStorage.setItem('oracle_session', sessionId);
+      localStorage.setItem('oracle_session', sessionId);
       // Count this as a new scan
       runTransaction(ref(db, 'crowd/total_users'), v => (v || 0) + 1);
     }

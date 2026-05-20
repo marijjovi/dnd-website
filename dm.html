@@ -16,9 +16,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
     import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-    <!-- Firebase config — not committed to git -->
-    
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
@@ -124,7 +121,8 @@
       if (!confirm('Reset audience and button press counts for the next session?')) return;
       await update(ref(db, 'crowd'), {
         total_users: 0,
-        button_count: 0
+        button_count: 0,
+        sessionVersion: Date.now()
       });
     });
 
